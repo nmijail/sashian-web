@@ -82,9 +82,9 @@ body.sashian-catalog .mkdf-page-title {
 	body.sashian-catalog .sashian-whatsapp {
 		display: inline-block;
 		position: fixed;
-		z-index: 120;
+		z-index: 100000;
 		top: 16px;
-		right: 56px;
+		right: 132px;
 		padding: 12px 4px;
 		color: #4a2c38;
 		font-family: Montserrat, sans-serif;
