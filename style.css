@@ -1,0 +1,14 @@
+/*
+Theme Name: Sashian
+Theme URI: https://floreriasashian.com/
+Description: Child theme de Fiorello para la tienda de Florería Sashian. El tema padre no se modifica.
+Author: Sashian
+Template: fiorello
+Version: 0.1.0
+Requires at least: 6.4
+Tested up to: 6.8
+Requires PHP: 8.2
+Text Domain: sashian
+*/
+
+/* Los estilos de la tienda viven en assets/catalog.css y solo aplican en el catálogo. */

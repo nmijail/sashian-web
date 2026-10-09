@@ -1,0 +1,186 @@
+/**
+ * Catálogo móvil de Sashian.
+ * Solo actúa con las clases que pone functions.php.
+ * Desktop conserva la grilla de Fiorello.
+ */
+
+body.sashian-catalog,
+body.sashian-catalog .mkdf-content,
+body.sashian-catalog .mkdf-content-inner,
+body.sashian-catalog .mkdf-container,
+body.sashian-catalog .mkdf-container-inner {
+	background-color: #f8f5f0;
+}
+
+/* El h1 «Tienda» se conserva para SEO y lectores de pantalla, sin la franja de 225px. */
+body.sashian-catalog .mkdf-title-holder,
+body.sashian-catalog .mkdf-title-wrapper {
+	height: 1px !important;
+	min-height: 0 !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+	background: transparent !important;
+	border: 0 !important;
+}
+
+body.sashian-catalog .mkdf-page-title {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+.sashian-cats {
+	display: flex;
+	gap: 24px;
+	margin: 0 0 16px;
+	padding: 12px 0 8px;
+	overflow-x: auto;
+	white-space: nowrap;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	font-family: Montserrat, sans-serif;
+	font-size: 12px;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	border-bottom: 1px solid rgba(41, 39, 36, 0.1);
+}
+
+.sashian-cats::-webkit-scrollbar {
+	display: none;
+}
+
+.sashian-cats__link {
+	flex: 0 0 auto;
+	padding-bottom: 6px;
+	color: #6f6663;
+	text-decoration: none;
+	border-bottom: 2px solid transparent;
+}
+
+.sashian-cats__link.is-active {
+	color: #292724;
+	font-weight: 600;
+	border-bottom-color: #4a2c38;
+}
+
+.sashian-whatsapp {
+	display: none;
+}
+
+@media (max-width: 1024px) {
+	body.sashian-catalog .qlwapp {
+		display: none !important;
+	}
+
+	body.sashian-catalog .sashian-whatsapp {
+		display: inline-block;
+		position: fixed;
+		z-index: 120;
+		top: 16px;
+		right: 56px;
+		padding: 12px 4px;
+		color: #4a2c38;
+		font-family: Montserrat, sans-serif;
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1;
+		text-decoration: none;
+		background: transparent;
+	}
+
+	body.sashian-catalog-archive ul.products {
+		display: block;
+		margin: 0;
+	}
+
+	body.sashian-catalog-archive ul.products li.product {
+		float: none !important;
+		width: 100% !important;
+		max-width: none !important;
+		margin: 0 0 48px !important;
+		clear: both;
+	}
+
+	body.sashian-catalog-archive .mkdf-pl-inner,
+	body.sashian-catalog-archive .mkdf-pl-image {
+		background: #f8f5f0;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	body.sashian-catalog-archive .mkdf-pl-image {
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+	}
+
+	body.sashian-catalog-archive .mkdf-pl-image img,
+	body.sashian-catalog-archive ul.products li.product img.attachment-woocommerce_thumbnail {
+		width: 100%;
+		height: 100%;
+		aspect-ratio: 4 / 5;
+		object-fit: contain;
+		object-position: center;
+		background: #f8f5f0;
+		border-radius: 0;
+	}
+
+	body.sashian-catalog-archive .woocommerce-loop-product__title,
+	body.sashian-catalog-archive .mkdf-pl-text-wrapper h6,
+	body.sashian-catalog-archive .mkdf-pl-text .mkdf-pl-title,
+	body.sashian-catalog-archive ul.products li.product h2,
+	body.sashian-catalog-archive ul.products li.product h6 {
+		margin: 16px 0 0;
+		color: #292724;
+		font-family: "Playfair Display", Georgia, serif;
+		font-size: 20px;
+		font-weight: 400;
+		line-height: 1.3;
+	}
+
+	body.sashian-catalog-archive ul.products li.product .price {
+		display: block;
+		margin: 6px 0 0;
+		color: #292724;
+		font-family: Montserrat, sans-serif;
+		font-size: 17px;
+		font-weight: 600;
+	}
+
+	body.sashian-catalog-archive .mkdf-pl-add-to-cart a,
+	body.sashian-catalog-archive ul.products li.product .button,
+	body.sashian-catalog-archive ul.products li.product .add_to_cart_button {
+		display: block;
+		width: 100%;
+		margin-top: 16px;
+		padding: 14px 16px;
+		border: 0;
+		border-radius: 0 !important;
+		background: #4a2c38 !important;
+		box-shadow: none !important;
+		color: #f8f5f0 !important;
+		font-family: Montserrat, sans-serif;
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		line-height: 1.2;
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	body.sashian-catalog-archive .woocommerce-result-count,
+	body.sashian-catalog-archive .woocommerce-ordering {
+		float: none;
+		margin: 0 0 12px;
+		color: #6f6663;
+		font-family: Montserrat, sans-serif;
+		font-size: 12px;
+	}
+}
