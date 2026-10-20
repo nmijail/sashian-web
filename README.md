@@ -14,6 +14,8 @@ En la tienda, las categorías y la ficha, en móvil:
 - Sustituye el botón flotante de WhatsApp por un enlace en el encabezado, con el mismo número (`529516480419`).
 - Quita del menú las categorías de producto vacías.
 
+Los precios de las tarjetas del catálogo usan ciruela oscuro (`#4a2c38`), 20 px y peso 600 en escritorio y móvil.
+
 En las fichas, el precio principal usa 30 px en escritorio y 28 px en móvil, peso medio y color oscuro. No cambia los importes, las tarjetas del catálogo ni el checkout.
 
 El escritorio sigue con la grilla de Fiorello. Las fotos del catálogo no se reemplazan.

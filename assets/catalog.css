@@ -74,6 +74,33 @@ body.sashian-catalog .mkdf-page-title {
 	display: none;
 }
 
+/* Precios del catálogo en ciruela: legibles sobre el fondo marfil. */
+body.sashian-catalog-archive ul.products li.product .mkdf-price-holder {
+	height: auto;
+	min-height: 27px;
+}
+
+body.sashian-catalog-archive ul.products li.product .price {
+	display: block;
+	height: auto;
+	color: #4a2c38;
+	font-family: Montserrat, sans-serif;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+body.sashian-catalog-archive ul.products li.product .price ins {
+	color: inherit;
+	font-weight: inherit;
+	text-decoration: none;
+	background: transparent;
+}
+
+body.sashian-catalog-archive ul.products li.product .price del {
+	font-size: 0.75em;
+}
+
 /* Precio principal de la ficha; no altera precios de tarjetas ni del checkout. */
 body.single-product.sashian-catalog .summary.entry-summary > .price,
 body.single-product.sashian-catalog .summary.entry-summary .woocommerce-variation-price > .price {
@@ -178,9 +205,9 @@ body.single-product.sashian-catalog .summary.entry-summary .price del {
 	body.sashian-catalog-archive ul.products li.product .price {
 		display: block;
 		margin: 6px 0 0;
-		color: #292724;
+		color: #4a2c38;
 		font-family: Montserrat, sans-serif;
-		font-size: 17px;
+		font-size: 20px;
 		font-weight: 600;
 	}
 
