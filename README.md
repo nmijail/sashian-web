@@ -20,6 +20,8 @@ En las fichas, el precio principal usa 30 px en escritorio y 28 px en móvil, pe
 
 El escritorio sigue con la grilla de Fiorello. Las fotos del catálogo no se reemplazan.
 
+La portada usa `front-page.php`: la foto real del ramo, el titular de marca y tres productos de WooCommerce. La página 189 y su slider se quedan en WordPress; quitar `front-page.php` los vuelve a mostrar.
+
 ## Activar, cuando se decida
 
 1. Subir `main` a `github.com/nmijail/sashian-web`.

@@ -36,6 +36,9 @@ function sashian_body_class( $classes ) {
 	if ( sashian_is_catalog_archive() ) {
 		$classes[] = 'sashian-catalog-archive';
 	}
+	if ( is_front_page() ) {
+		$classes[] = 'sashian-home';
+	}
 	return $classes;
 }
 add_filter( 'body_class', 'sashian_body_class' );
@@ -50,6 +53,15 @@ function sashian_enqueue_styles() {
 		array( 'fiorello-mikado-default-style' ),
 		wp_get_theme()->get( 'Version' )
 	);
+
+	if ( is_front_page() ) {
+		wp_enqueue_style(
+			'sashian-home',
+			get_stylesheet_directory_uri() . '/assets/home.css',
+			array( 'sashian-catalog' ),
+			wp_get_theme()->get( 'Version' )
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'sashian_enqueue_styles', 30 );
 
@@ -127,6 +139,10 @@ function sashian_catalog_categories() {
 		echo '</a>';
 	}
 
+	echo '<a class="sashian-cats__link" href="' . esc_url( home_url( '/flores-a-domicilio-oaxaca/' ) ) . '">';
+	echo esc_html__( 'Domicilio', 'sashian' );
+	echo '</a>';
+
 	echo '</nav>';
 }
 add_action( 'woocommerce_before_shop_loop', 'sashian_catalog_categories', 5 );
@@ -170,3 +186,477 @@ function sashian_catalog_whatsapp_link() {
 	echo '</a>';
 }
 add_action( 'wp_footer', 'sashian_catalog_whatsapp_link' );
+
+/**
+ * Texto de cada categoría que ya tiene productos.
+ * La frase es el H1 y el title. No inventa cobertura ni horarios de entrega.
+ *
+ * @param string $slug Slug de product_cat.
+ * @return array{h1:string,title:string,lead:string}|null
+ */
+function sashian_category_seo( $slug ) {
+	$map = array(
+		'ramos'            => array(
+			'h1'    => 'Ramos de flores a domicilio en Oaxaca',
+			'title' => 'Ramos de flores a domicilio en Oaxaca | Florería Sashian',
+			'lead'  => 'Ramos frescos para regalar, con entrega a domicilio en Oaxaca de Juárez.',
+		),
+		'amor'             => array(
+			'h1'    => 'Flores para amor y aniversario en Oaxaca',
+			'title' => 'Flores para amor y aniversario en Oaxaca | Florería Sashian',
+			'lead'  => 'Ramos para decir te quiero o celebrar un aniversario, a domicilio en Oaxaca.',
+		),
+		'cumpleanos'       => array(
+			'h1'    => 'Flores para cumpleaños a domicilio en Oaxaca',
+			'title' => 'Flores para cumpleaños a domicilio en Oaxaca | Florería Sashian',
+			'lead'  => 'Ramos para cumpleaños con entrega a domicilio en Oaxaca de Juárez.',
+		),
+		'premium'          => array(
+			'h1'    => 'Arreglos premium a domicilio en Oaxaca',
+			'title' => 'Arreglos premium a domicilio en Oaxaca | Florería Sashian',
+			'lead'  => 'Arreglos de mayor tamaño, con entrega a domicilio en Oaxaca.',
+		),
+		'flores-amarillas' => array(
+			'h1'    => 'Flores amarillas a domicilio en Oaxaca',
+			'title' => 'Flores amarillas a domicilio en Oaxaca | Florería Sashian',
+			'lead'  => 'Girasoles, rosas y gerberas amarillas con entrega en Oaxaca de Juárez.',
+		),
+		'graduacion'       => array(
+			'h1'    => 'Flores para graduación en Oaxaca',
+			'title' => 'Flores para graduación en Oaxaca | Florería Sashian',
+			'lead'  => 'Ramos para graduación, con entrega a domicilio en Oaxaca.',
+		),
+		'girasoles'        => array(
+			'h1'    => 'Ramos de girasoles a domicilio en Oaxaca',
+			'title' => 'Ramos de girasoles a domicilio en Oaxaca | Florería Sashian',
+			'lead'  => 'Ramos de girasoles frescos para regalar en Oaxaca de Juárez.',
+		),
+		'eventos'          => array(
+			'h1'    => 'Flores para eventos en Oaxaca',
+			'title' => 'Flores para eventos en Oaxaca | Florería Sashian',
+			'lead'  => 'Arreglos para eventos en Oaxaca de Juárez. Cuéntanos la fecha por WhatsApp.',
+		),
+	);
+
+	return isset( $map[ $slug ] ) ? $map[ $slug ] : null;
+}
+
+/**
+ * El banner de Fiorello usa la página Tienda en las fichas y el nombre del sitio en el blog.
+ *
+ * @param string $title Texto que iba a pintar el H1.
+ * @return string
+ */
+function sashian_banner_title( $title ) {
+	if ( function_exists( 'is_product' ) && is_product() ) {
+		return get_the_title();
+	}
+
+	if ( is_singular( 'post' ) ) {
+		return get_the_title();
+	}
+
+	if ( function_exists( 'is_product_category' ) && is_product_category() ) {
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term ) {
+			$seo = sashian_category_seo( $term->slug );
+			if ( $seo ) {
+				return $seo['h1'];
+			}
+		}
+	}
+
+	if ( function_exists( 'is_shop' ) && is_shop() ) {
+		return 'Flores a domicilio en Oaxaca';
+	}
+
+	return $title;
+}
+add_filter( 'fiorello_mikado_filter_title_text', 'sashian_banner_title', 20 );
+
+/**
+ * Title de Rank Math cuando todavía es el nombre pelón más la marca.
+ *
+ * @param string $title Title generado.
+ * @param string $name  Nombre de la ficha, el post o la categoría.
+ */
+function sashian_title_is_plain( $title, $name ) {
+	$plain = html_entity_decode( wp_strip_all_tags( (string) $title ), ENT_QUOTES, 'UTF-8' );
+	$plain = trim( preg_replace( '/\s+/', ' ', $plain ) );
+	$name  = html_entity_decode( wp_strip_all_tags( (string) $name ), ENT_QUOTES, 'UTF-8' );
+	$name  = trim( preg_replace( '/\s+/', ' ', $name ) );
+
+	if ( '' === $name ) {
+		return false;
+	}
+
+	return $plain === $name . ' - Florería Sashian' || $plain === $name . ' - Floreria Sashian';
+}
+
+/**
+ * @param string $title Title de Rank Math.
+ * @return string
+ */
+function sashian_document_title( $title ) {
+	if ( 'delivery' === get_query_var( 'sashian_page' ) ) {
+		return 'Flores a domicilio en Oaxaca | Florería Sashian';
+	}
+
+	if ( function_exists( 'is_shop' ) && is_shop() && sashian_title_is_plain( $title, 'Tienda' ) ) {
+		return 'Flores a domicilio en Oaxaca | Florería Sashian';
+	}
+
+	if ( function_exists( 'is_product' ) && is_product() && sashian_title_is_plain( $title, get_the_title() ) ) {
+		return get_the_title() . ' | Flores a domicilio en Oaxaca';
+	}
+
+	if ( is_singular( 'post' ) && sashian_title_is_plain( $title, get_the_title() ) ) {
+		return get_the_title() . ' | Florería Sashian';
+	}
+
+	if ( function_exists( 'is_product_category' ) && is_product_category() ) {
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term && sashian_title_is_plain( $title, $term->name ) ) {
+			$seo = sashian_category_seo( $term->slug );
+			if ( $seo ) {
+				return $seo['title'];
+			}
+		}
+	}
+
+	return $title;
+}
+add_filter( 'rank_math/frontend/title', 'sashian_document_title' );
+
+/**
+ * @param string $description Meta description.
+ * @return string
+ */
+function sashian_document_description( $description ) {
+	if ( 'delivery' === get_query_var( 'sashian_page' ) ) {
+		return 'Envío de ramos y arreglos a domicilio en Oaxaca de Juárez y la zona metropolitana. Lunes a sábado de 9:00 a 19:00, domingos de 10:00 a 15:00.';
+	}
+
+	if ( function_exists( 'is_product_category' ) && is_product_category() ) {
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term ) {
+			$seo = sashian_category_seo( $term->slug );
+			if ( $seo && '' === trim( wp_strip_all_tags( (string) $description ) ) ) {
+				return $seo['lead'];
+			}
+		}
+	}
+
+	return $description;
+}
+add_filter( 'rank_math/frontend/description', 'sashian_document_description' );
+
+/**
+ * @param array<string,string> $robots
+ * @return array<string,string>
+ */
+function sashian_document_robots( $robots ) {
+	if ( 'delivery' !== get_query_var( 'sashian_page' ) ) {
+		return $robots;
+	}
+
+	$robots['index']  = 'index';
+	$robots['follow'] = 'follow';
+	unset( $robots['noindex'], $robots['nofollow'] );
+
+	return $robots;
+}
+add_filter( 'rank_math/frontend/robots', 'sashian_document_robots' );
+
+/**
+ * @param string $canonical
+ * @return string
+ */
+function sashian_document_canonical( $canonical ) {
+	if ( 'delivery' === get_query_var( 'sashian_page' ) ) {
+		return home_url( '/flores-a-domicilio-oaxaca/' );
+	}
+	return $canonical;
+}
+add_filter( 'rank_math/frontend/canonical', 'sashian_document_canonical' );
+
+/**
+ * Rank Math descarta product_cat antes del filtro de exclusión si la opción está apagada.
+ *
+ * @param mixed $value
+ * @return mixed
+ */
+function sashian_enable_product_cat_sitemap_setting( $value ) {
+	return $value ? $value : 'on';
+}
+add_filter( 'rank_math/settings/sitemap.tax_product_cat_sitemap', 'sashian_enable_product_cat_sitemap_setting' );
+
+/**
+ * La comprobación de Rank Math lee la opción antes de los filtros del sitemap.
+ *
+ * @param mixed $value
+ * @return mixed
+ */
+function sashian_sitemap_option_include_product_cat( $value ) {
+	if ( ! is_array( $value ) ) {
+		$value = array();
+	}
+	$value['tax_product_cat_sitemap'] = 'on';
+	return $value;
+}
+add_filter( 'option_rank-math-options-sitemap', 'sashian_sitemap_option_include_product_cat' );
+
+/**
+ * El índice del sitemap queda en caché de Rank Math y no ve la opción nueva.
+ */
+add_filter( 'rank_math/sitemap/enable_caching', '__return_false' );
+
+/**
+ * Rank Math no registra product_cat si la opción del sitemap está apagada.
+ * Estas dos funciones agregan el índice y las URLs con productos.
+ *
+ * @param string $index XML extra del índice.
+ * @return string
+ */
+function sashian_product_cat_sitemap_index( $index ) {
+	if ( false !== strpos( (string) $index, 'product_cat-sitemap.xml' ) ) {
+		return $index;
+	}
+
+	$index .= "\t<sitemap>\n";
+	$index .= "\t\t<loc>" . esc_url( home_url( '/product_cat-sitemap.xml' ) ) . "</loc>\n";
+	$index .= "\t</sitemap>\n";
+	return $index;
+}
+add_filter( 'rank_math/sitemap/index', 'sashian_product_cat_sitemap_index' );
+
+/**
+ * @param string $content XML del sitemap de categorías.
+ * @return string
+ */
+function sashian_product_cat_sitemap_content( $content ) {
+	if ( '' !== $content ) {
+		return $content;
+	}
+
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'hide_empty' => true,
+		)
+	);
+	if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		return $content;
+	}
+
+	$xml = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+	foreach ( $terms as $term ) {
+		if ( in_array( $term->slug, array( 'uncategorized', 'sin-categoria' ), true ) ) {
+			continue;
+		}
+		$link = get_term_link( $term );
+		if ( is_wp_error( $link ) ) {
+			continue;
+		}
+		$xml .= "\t<url>\n\t\t<loc>" . esc_url( $link ) . "</loc>\n\t</url>\n";
+	}
+	$xml .= '</urlset>';
+
+	return $xml;
+}
+add_filter( 'rank_math/sitemap/product_cat/content', 'sashian_product_cat_sitemap_content' );
+
+/**
+ * Las categorías de producto existen, pero Rank Math no las manda al sitemap.
+ * Las vacías siguen fuera.
+ *
+ * @param bool   $exclude
+ * @param string $type
+ * @return bool
+ */
+function sashian_include_product_categories_in_sitemap( $exclude, $type ) {
+	if ( 'product_cat' === $type ) {
+		return false;
+	}
+	return $exclude;
+}
+add_filter( 'rank_math/sitemap/exclude_taxonomy', 'sashian_include_product_categories_in_sitemap', 20, 2 );
+
+/**
+ * @param bool     $exclude
+ * @param string[] $taxonomy_names
+ * @return bool
+ */
+function sashian_sitemap_skip_empty_categories( $exclude, $taxonomy_names ) {
+	if ( is_array( $taxonomy_names ) && in_array( 'product_cat', $taxonomy_names, true ) ) {
+		return true;
+	}
+	return $exclude;
+}
+add_filter( 'rank_math/sitemap/exclude_empty_terms', 'sashian_sitemap_skip_empty_categories', 20, 2 );
+
+/**
+ * Una línea visible bajo las categorías. El H1 del banner queda oculto en el catálogo.
+ */
+function sashian_category_lead() {
+	if ( ! function_exists( 'is_product_category' ) || ! is_product_category() ) {
+		return;
+	}
+
+	$term = get_queried_object();
+	if ( ! $term instanceof WP_Term || (int) $term->count < 1 ) {
+		return;
+	}
+
+	$seo = sashian_category_seo( $term->slug );
+	if ( ! $seo ) {
+		return;
+	}
+
+	echo '<p class="sashian-cat-lead">' . esc_html( $seo['lead'] ) . '</p>';
+}
+add_action( 'woocommerce_before_shop_loop', 'sashian_category_lead', 6 );
+
+/**
+ * Favoritos de la portada. Precios y fotos salen de WooCommerce.
+ *
+ * @return WC_Product[]
+ */
+function sashian_home_favorite_products() {
+	$slugs    = array(
+		'arreglo-de-gerberas-color-y-vida',
+		'ramo-de-lirios-amarillos',
+		'ramo-de-girasoles-y-alstroemerias-blancas',
+	);
+	$products = array();
+
+	if ( ! function_exists( 'wc_get_product' ) ) {
+		return $products;
+	}
+
+	foreach ( $slugs as $slug ) {
+		$posts = get_posts(
+			array(
+				'name'           => $slug,
+				'post_type'      => 'product',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+			)
+		);
+		if ( ! $posts ) {
+			continue;
+		}
+		$product = wc_get_product( $posts[0] );
+		if ( $product instanceof WC_Product && $product->is_visible() ) {
+			$products[] = $product;
+		}
+	}
+
+	return $products;
+}
+
+/**
+ * Respaldo si la portada vuelve al contenido de la página 189.
+ * front-page.php ya imprime su propio H1 y no llama a the_content.
+ *
+ * @param string $content
+ * @return string
+ */
+function sashian_front_page_heading( $content ) {
+	if ( ! is_front_page() || ! in_the_loop() || ! is_main_query() ) {
+		return $content;
+	}
+	if ( locate_template( 'front-page.php', false, false ) ) {
+		return $content;
+	}
+	if ( false !== stripos( $content, '<h1' ) ) {
+		return $content;
+	}
+
+	$html  = '<h1 class="sashian-home-title">Florería en Oaxaca de Juárez</h1>';
+	$html .= '<p class="sashian-home-lead">Ramos y flores a domicilio en Oaxaca y la zona metropolitana. ';
+	$html .= '<a href="' . esc_url( home_url( '/flores-a-domicilio-oaxaca/' ) ) . '">Ver envíos</a>.</p>';
+
+	return $html . $content;
+}
+add_filter( 'the_content', 'sashian_front_page_heading', 8 );
+
+/**
+ * Quiénes somos trae un segundo H1 dentro del contenido. El banner ya es el H1.
+ *
+ * @param string $content
+ * @return string
+ */
+function sashian_demote_section_h1( $content ) {
+	if ( ! is_singular( 'page' ) || is_front_page() ) {
+		return $content;
+	}
+
+	$replaced = preg_replace_callback(
+		'/<h1(\s[^>]*class="[^"]*\bmkdf-st-title\b[^"]*"[^>]*)>(.*?)<\/h1>/is',
+		static function ( $matches ) {
+			return '<h2' . $matches[1] . '>' . $matches[2] . '</h2>';
+		},
+		$content
+	);
+
+	return is_string( $replaced ) ? $replaced : $content;
+}
+add_filter( 'the_content', 'sashian_demote_section_h1', 12 );
+
+/**
+ * Página de domicilio. Solo dice lo que ya está en Contacto: zona metropolitana y horario.
+ */
+function sashian_register_delivery_page() {
+	add_rewrite_rule( '^flores-a-domicilio-oaxaca/?$', 'index.php?sashian_page=delivery', 'top' );
+}
+add_action( 'init', 'sashian_register_delivery_page' );
+
+/**
+ * @param string[] $vars
+ * @return string[]
+ */
+function sashian_delivery_query_var( $vars ) {
+	$vars[] = 'sashian_page';
+	return $vars;
+}
+add_filter( 'query_vars', 'sashian_delivery_query_var' );
+
+function sashian_flush_delivery_rewrite() {
+	if ( '1' === get_option( 'sashian_delivery_rewrite' ) ) {
+		return;
+	}
+	flush_rewrite_rules( false );
+	update_option( 'sashian_delivery_rewrite', '1', false );
+}
+add_action( 'init', 'sashian_flush_delivery_rewrite', 99 );
+
+/**
+ * @param bool     $preempt
+ * @param WP_Query $wp_query
+ * @return bool
+ */
+function sashian_delivery_not_404( $preempt, $wp_query ) {
+	if ( 'delivery' !== get_query_var( 'sashian_page' ) ) {
+		return $preempt;
+	}
+
+	$wp_query->is_404 = false;
+	status_header( 200 );
+	return true;
+}
+add_filter( 'pre_handle_404', 'sashian_delivery_not_404', 10, 2 );
+
+/**
+ * @param string $template
+ * @return string
+ */
+function sashian_delivery_template( $template ) {
+	if ( 'delivery' !== get_query_var( 'sashian_page' ) ) {
+		return $template;
+	}
+
+	$custom = get_stylesheet_directory() . '/delivery.php';
+	return file_exists( $custom ) ? $custom : $template;
+}
+add_filter( 'template_include', 'sashian_delivery_template' );
