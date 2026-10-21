@@ -30,6 +30,14 @@ body.sashian-home .mkdf-content {
 	padding-top: 0 !important;
 }
 
+/* El chat flotante tapa la foto y el botón. La portada ya tiene WhatsApp. */
+@media (max-width: 1024px) {
+	body.sashian-home .qlwapp,
+	body.sashian-home .qlwapp__container {
+		display: none !important;
+	}
+}
+
 .sashian-front {
 	color: #292724;
 	background: #f8f5f0;
