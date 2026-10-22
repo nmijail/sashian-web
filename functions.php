@@ -10,6 +10,80 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Ruta de un archivo del tema activo o, si no está, del child Sashian.
+ * Así el tema hermano usa el catálogo y el SEO sin copiarlos.
+ *
+ * @param string $relative Ruta dentro del tema.
+ */
+function sashian_theme_file_path( $relative ) {
+	$relative = ltrim( $relative, '/' );
+	$own      = get_stylesheet_directory() . '/' . $relative;
+	if ( is_readable( $own ) ) {
+		return $own;
+	}
+
+	$sibling = dirname( get_stylesheet_directory() ) . '/sashian/' . $relative;
+	if ( is_readable( $sibling ) ) {
+		return $sibling;
+	}
+
+	return $own;
+}
+
+/**
+ * URL del mismo archivo que sashian_theme_file_path().
+ *
+ * @param string $relative Ruta dentro del tema.
+ */
+function sashian_theme_file_uri( $relative ) {
+	$relative = ltrim( $relative, '/' );
+	if ( is_readable( get_stylesheet_directory() . '/' . $relative ) ) {
+		return get_stylesheet_directory_uri() . '/' . $relative;
+	}
+
+	$sibling = dirname( get_stylesheet_directory() ) . '/sashian/' . $relative;
+	if ( is_readable( $sibling ) ) {
+		return trailingslashit( get_theme_root_uri() ) . 'sashian/' . $relative;
+	}
+
+	return get_stylesheet_directory_uri() . '/' . $relative;
+}
+
+/**
+ * Al cambiar entre los dos child, conserva menús, logo y ajustes del otro.
+ * No pisa una configuración que ya tenga menús.
+ *
+ * @param string        $new_name  Nombre visible del tema nuevo.
+ * @param WP_Theme|null $new_theme Tema nuevo.
+ * @param WP_Theme|null $old_theme Tema anterior.
+ */
+function sashian_keep_sibling_mods( $new_name, $new_theme = null, $old_theme = null ) {
+	unset( $new_name );
+	if ( ! $new_theme instanceof WP_Theme || ! $old_theme instanceof WP_Theme ) {
+		return;
+	}
+
+	$family = array( 'sashian', 'sashian-muertos' );
+	$old    = $old_theme->get_stylesheet();
+	$new    = $new_theme->get_stylesheet();
+	if ( ! in_array( $old, $family, true ) || ! in_array( $new, $family, true ) || $old === $new ) {
+		return;
+	}
+
+	$from = get_option( 'theme_mods_' . $old );
+	$to   = get_option( 'theme_mods_' . $new );
+	if ( ! is_array( $from ) ) {
+		return;
+	}
+	if ( is_array( $to ) && ! empty( $to['nav_menu_locations'] ) ) {
+		return;
+	}
+
+	update_option( 'theme_mods_' . $new, $from );
+}
+add_action( 'switch_theme', 'sashian_keep_sibling_mods', 10, 3 );
+
+/**
  * Archivo de tienda o de una categoría de producto.
  */
 function sashian_is_catalog_archive() {
@@ -49,7 +123,7 @@ add_filter( 'body_class', 'sashian_body_class' );
 function sashian_enqueue_styles() {
 	wp_enqueue_style(
 		'sashian-catalog',
-		get_stylesheet_directory_uri() . '/assets/catalog.css',
+		sashian_theme_file_uri( 'assets/catalog.css' ),
 		array( 'fiorello-mikado-default-style' ),
 		wp_get_theme()->get( 'Version' )
 	);
@@ -57,7 +131,7 @@ function sashian_enqueue_styles() {
 	if ( is_front_page() ) {
 		wp_enqueue_style(
 			'sashian-home',
-			get_stylesheet_directory_uri() . '/assets/home.css',
+			sashian_theme_file_uri( 'assets/home.css' ),
 			array( 'sashian-catalog' ),
 			wp_get_theme()->get( 'Version' )
 		);
@@ -656,7 +730,7 @@ function sashian_delivery_template( $template ) {
 		return $template;
 	}
 
-	$custom = get_stylesheet_directory() . '/delivery.php';
+	$custom = sashian_theme_file_path( 'delivery.php' );
 	return file_exists( $custom ) ? $custom : $template;
 }
 add_filter( 'template_include', 'sashian_delivery_template' );
